@@ -111,3 +111,96 @@ exports.getSingleNote = async function (req, res) {
     });
   }
 };
+
+exports.deleteNote = async function (req, res) {
+  try {
+    loginRequired(req, res, async function () {
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded._id;
+
+      const noteId = req.params.id;
+
+      if (!mongoose.Types.ObjectId.isValid(noteId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Note Id",
+        });
+      }
+
+      const note = await Note.findOneAndDelete({
+        createdBy: userId,
+        _id: noteId,
+      });
+
+      if (!note) {
+        return res.status(404).json({
+          success: false,
+          message: "No Note Found",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Note Deleted Successfully",
+      });
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error,
+    });
+  }
+};
+
+exports.updateNote = async function (req, res) {
+  try {
+    loginRequired(req, res, async function () {
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded._id;
+
+      const noteId = req.params.id;
+
+      if (!mongoose.Types.ObjectId.isValid(noteId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Note Id",
+        });
+      }
+
+      const { title, content } = req.body;
+
+      if (!title || !content) {
+        return res.status(404).json({
+          success: false,
+          message: "Title and content are required for updating the note.",
+        });
+      }
+
+      const note = await Note.findOneAndUpdate(
+        { createdBy: userId, _id: noteId },
+        { title, content },
+        { new: true }
+      );
+
+      if (!note) {
+        return res.status(404).json({
+          success: false,
+          message: "No Note Found",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Note Updated Successfully",
+        data: note,
+      });
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error,
+    });
+  }
+};
