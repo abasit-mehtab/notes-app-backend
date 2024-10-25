@@ -1,9 +1,10 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-const express = require("express");
 const bodyParser = require("body-parser");
-const authRoutes = require("./routes/authRoutes");
-import { Request, Response } from "express";
+import authRoutes from "./routes/authRoutes";
+import userRoutes from "./routes/userRoutes";
+import noteRoutes from "./routes/noteRoutes";
+import express, { Request, Response } from "express";
 
 const PORT = process.env.PORT || 3001;
 
@@ -18,6 +19,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api", authRoutes);
+app.use("/api", userRoutes);
+app.use("/api", noteRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
